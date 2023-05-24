@@ -1,0 +1,22 @@
+
+SSH into your server - use putty on windows
+
+
+If you don;t have git installed on EC2 server use command:
+
+$ sudo apt install git
+
+1) get the clone link for your project on git.
+
+2) delete the html directory from var/www/html:
+
+$ sudo rm -r html/ 
+
+// do this command from the var/www folder
+
+3) $ sudo git clone <project link> html
+
+// this puts your project files into the html folder where apache serves assets from to requests coming in on port 80
+
+NOTE: you may need to use the https link and not the ssh one for it to work.
+

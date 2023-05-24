@@ -1,0 +1,56 @@
+SQS Queue service
+
+- Messages are json and have a limit of 256 KB in size.
+
+Overall process:
+- Publish message to Queue
+- Consumer continuously polls for new messages at the desired rate.
+- message is claimed by the consumer (message removed from queue and in ephemeral state)
+  - no longer visible to others, only the consumer that claimed it.
+  - a visibility timeout starts - if consumer does not acknowledge success then the message is put back into the queue and lock is released on it
+- Consume and dequeue message (deleting it from the queue)
+
+NOTE: ANTI PATTERN:
+- generally not good to directly publish to a queue.
+  - set up a SNS in between which will allow you to fan out messages (i.e. to many different queues)
+
+- Only one thread or consumer is able to see and process a message in the queue at once
+  - two different threads cannot compete for the same message
+
+WHY SQS?
+
+- Consumer can control backpressure. They can decide the rate at which to process messages and when to poll or pull them. The traditional API approach removes that control and the publisher calls the consumer without their control.
+- Decouples the publisher from the consumer - the publisher fires and forgets - does not need to know anything about the consumers
+  - If the consumer service goes down that does not cause the publisher to error out (as if making api calls that fail). Messages will continue to be published and added to the queue.
+- Eventual Gauranteed Processing - cases where real time updates are not required and some delay is acceptable while requiring the processing of events or messages asynchronously.
+
+2 TYPES OF QUEUES WITH SQS:
+
+- Standard: original type released in earlier 2000s. A lot of messages get published at once.
+  - limitation: best effort ordering - if a lot of messages published, the processing of the order is not guaranteed. ORDER IS NOT GUARANTEED.
+  - At least once delivery - there is a likeliehood that the same message could be processed again. there are ways to handle this like using timestamp comparison.
+  - PRO: Unlimited throughput
+
+- FIFO first in first out
+  - Ordering is gauranteed
+  - Exactly Once processing
+  - CON: throughput limit: 300 TPS (Transactions Per Second) Max (3000 if batching - using 10 messages per batch which counts as 1 call)
+  - 25% more expensive than Standard queues - generally not a big deal since SQS is cheap even at high scale.
+  - Supports messaging channels or group message IDs: i.e. you want a certain group of messages for customer A to be in an order and another group for consumer B
+
+
+COMMON PATTERNS:
+from https://www.youtube.com/watch?v=CyYZ3adwboc
+
+Fanout
+- set up SNS which is subscribed to by many different SQS queues
+- One to many set up so you can publish messages to many different services
+
+
+Servlerless Processing Backpressure Control
+- Use SQS with AWS Lambda
+- Easy to hookup and scale
+
+Job Buffering
+- Cloudwatch Event connects to SQS
+- SQS connects to EC2 (long running jobs) or AWS Lammbda (shorter running jobs)

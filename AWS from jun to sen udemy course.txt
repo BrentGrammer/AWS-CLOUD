@@ -1,0 +1,47 @@
+
+
+The most common AWS services:
+
+S3
+DynamoDB
+EC2
+Lambda
+CloudFront
+
+
+--------------
+
+EC2 Service:
+
+-This is the basic general purpose bare metal server on AWS where you can run your backend or server (instead of Digital Ocean or Heroku for example)
+
+S3 Service:
+
+-An Object Storage Service.  Each piece of data (i.e. a file, etc.) is considered an object and is associated with an id key.  You can store images, files.  You could save profile pics for users, etc.
+*Limit is 5 GB of storage.  
+
+---------------
+
+Lambda Service:
+
+-Back end functions can be stored and run as needed.  They can also scale automatically as needed.  (i.e. an insert image photo when a user uploads a pic for example).
+
+------------------
+
+Cloudfront Service:
+
+-Like a CDN - a worldwide network of data centeres where your files can be served from and speeds up distribution of your data over the wire.  HTML/CSS, JS and Image files can be put on cloudfront for faster delivery through a worldwide network of data centers.  Provides automatic https.  
+
+DynamoDB Service:
+
+-A key/value storage database.  Reliable and performant - used across many different types of platforms and apps.
+
+-----------------
+
+ADVANTAGE OF MICROSERVICES:
+
+-Each part of the application can be updated and maintained individually by teams and is modularized instead of being coupled in a monoloithic setup.  
+
+
+-Service Level Agreement (SLA) - 
+A standard for a response sent between two parts or services of the application that ensures that no matter what updates are done to either, each will expect a certain a response in a certain way.  

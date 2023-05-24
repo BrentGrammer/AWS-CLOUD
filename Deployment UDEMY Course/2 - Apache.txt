@@ -1,0 +1,98 @@
+
+*APACHE is a piece of web server software that does nothing but handle HTTP Traffic.
+
+-Apache listens for any incoming HTTP requests on the server machine and handles them appropriately.
+
+glossary:
+
+PORTS: Linux handles certain traffic a certain way depending on the port the request comes in on.  Port 80 is specifically for HTTP traffic, port 443 is for https, port 22 is SSH port.  
+
+
+-----------------------
+
+
+APACHE COMMANDS AND SETUP:
+
+Install:
+
+$ sudo apt install apache2
+
+// install an apache server - respond Y to install the extra dependencies.
+Check apache install with $ sudo service apache2 status (press CTRL-C to exit the status view)
+
+Note: to list files in a dir use:
+
+$ ls -l
+
+$ sudo service apache2 status 
+
+// shows if apache is running
+
+----
+
+$ cd /etc/apache2/
+
+// navigates to the apache directory where apache is installed.
+-The master main config file for apache is the apache2.conf
+(can open with $ vi apache2.conf -- exit with $ :q!)
+
+--
+
+ENVIRONMENT VARIABLES:
+
+-set in /etc/apache2/envvars
+
+$ vi envvars 
+// opens the file defining env variables
+
+-------------
+
+FILES TO CONFIGURE HANDLING HTTP OR HTTPS:
+
+-These config files are located in /etc/apache2/sites-available/
+
+000-default.conf ===> this configures handling regular http traffic
+default-ssl.conf ===> This configs https traffic
+
+-To inspect the files use:
+
+$ vi <filename>
+
+$ :q! exits the editor.
+
+--- File conents:
+
+<VirtualHost *:80>
+
+
+// this means that the apache server can host multiple servers as a virtual host and *:80 means to listen for anything from any domain that comes in on port 80 and run when that occurrs.
+
+DocumentRoot /var/www/html 
+
+// This means that any requests coming in on port 80 will be served whatever is specified here.  There will probably be an index.html file in the html folder.
+
+======================
+
+ALLOWING PORT 80 ON FIREWALL:
+
+-You need to initially allow traffic on port 80 in your firewall rules.
+
+Linux has a built in firewall it uses with apache that initially blocks traffic on port 80.
+
+Allow Traffic through firewall:
+
+1) Go to AWS Console to your EC2 instance page and scroll to the right and open the launch-wizard in the last column.
+
+2) Click on the Inbound Tab, then EDIT.
+
+3) Select HTTP from the Type dropdown menu which will fill out the port for you.
+(The 0.0.0.0/:0 means that any ip address can access port 80.)
+
+-Can add optional note at the end
+
+4) Click Save.
+
+-You can now go to view the default Ubuntu page if you copy the public IP address for your EC2 instance into the browser URL bar.
+
+
+

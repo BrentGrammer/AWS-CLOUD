@@ -1,0 +1,28 @@
+API GATEWAY:
+
+
+Create an API:
+
+1) select create New API option
+
+2) Click Actions dropdown and select Create Resource.
+
+  -Name the resource and set the path (they should be the same)
+  Ex: Name - compare-path
+      path: /compare-path
+
+  -Options:
+    -configure as proxy request: This means that your route will catch all requests and you can do the routing in a Lambda function for example.
+
+
+   -CORS: modern browsers send an additional pre-flight request to check the resource and determine if it's okay to access it.  This pre-flight request has an OPTIONS header and this must be handled on your API to return a response that grants permission for the main request or not.  
+   *Checking Enable API Gateway CORS will automatically configure the headers on the response to handle the pre-flight OPTIONS request so there will be no issues accessing the API.
+
+3) Click create resource
+
+4) Select the resource you created and click actions dropdown->Create Method.  Select the HTTP method for the endpoint request handler (POST GET etc.)
+
+5) Setup endpoint Method:
+   -Integration Type: this is what action you want to have happen when a request with the matching method hits that endpoint resource.
+
+  -Use Lambda Proxy Integration: -if selecting to use a Lambda function for the Integration type, this option means that the request data will be extracted as JSON and you handle all of the logic and setup you would in API Gateway on your own - this is not recommended.

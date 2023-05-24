@@ -1,0 +1,81 @@
+Here's how to create a function:
+
+1) Click "Create function"
+
+2) Leave the default selection (=> "Author from scratch")
+
+3) Choose "Create a new role from template(s)" and enter any role name of your choice. You don't need to select anything in the "Policy templates" dropdown! Leave it empty.
+
+4) Click "Create function"
+
+Thereafter, you'll be in the Lambda editor UI where you can write code, attach triggers (as shown in the next video => We won't attach any here) and where you can edit the general Lambda config. Some items maybe be re-positioned (compared to the video) but the general functionality is 100% the same.
+
+5) In the handler setup, make sure that the Handler field is set to the same name of the file and the exported property in the module.exports declaration.
+
+Ex: 
+
+exports.handler = (event, context, callback) => {
+   
+  callback(null, { message: 'from lambda' });
+
+}
+
+Handler: index.handler
+
+// this tells AWS what function to execute in the file (in case there is more than one function).
+
+6) *SET PERMISSIONS WITH ROLE FIELD:
+*By default all AWS services have no permissions and can't do anything.
+A role can be specified to allow permissions for the Lambda function to run and access other services, etc. like a database.
+-You can create a role from template and name it something so you know what it's for - i.e. 'appname-store-data' etc.
+
+You can select a policy template or leave blank - this will automatically allow the service to access and write log files.
+
+7) Set Advanced options:
+  -Memory - how much memory is used - the more the faster it will run, but it is also more expensive.
+
+  -Timeout: max is 5 mninutes.  this will stop the function if it takes more than the specified time - do not set it to the max since this will be expensive, and don't set it to short because if the function is still running, it will be cut off even if there is no error.
+10 seconds is probably okay for most low processing functions.
+
+  -Active Tracing - extra logging feature that costs more money - probably disable this for personal projects.
+
+----
+
+**Triggers: When using API Gateway and connecting to Lambda, you do not set the triggers here and you handle that logic in API Gateway
+
+---
+
+ZIPPING FILES FOR LAMBDA FUNCTION AND UPLOADING:
+
+1) Create a root entry file + handler method. For example an index.js  file with the exports.handler = (event, ...) => { ... }  method.
+
+If you use a different file name AND/OR different starting handler function, you'll need to adjust your Lambda config! Set Handler to [FILENAME].[HANDLER-FUNCTION-NAME]  (default: index.handler).
+
+2) You may split your code over multiple files and import them into the root file via require('file-path') . This is also how you could include other third-party JavaScript (or other languages) packages.
+
+3) Select all files and then zip them into an archive. Important: DON'T put them into a folder and zip the folder. This will not work!
+
+4) Upload the created zip file to Lambda ("Code" => "Code entry type" => "Upload a .ZIP file")
+
+---------
+
+HOOKING UP LAMBDA FUNCTION TO API GATEWAY:
+
+1) Go to API Gateway and select the method and enpoint for the lambda in the left panel and select to use a lambda for the action (integration type) and type the name of the lambda function into the corresponding field.
+ 
+-You can test the lambda then by clicking TEST which will send a request to the endpoint to trigger the lambda and provide the response and a detailed log
+
+----------
+
+ARGUMENTS FOR LAMDA FUNCTION:
+
+event - data from the event source (this can be configured in API Gateway for example to choose what data to pass to this arg).
+
+context - information about the execution context- time it started, time remaining until the function times out, etc.
+
+callback - takes two args (<error argument>, <data to pass back>)
+  error arg - if null, this means the function succeeded
+  If the error arg has anything in it (i.e. an object with error information), then that will be returned, if it is null then the second argument will be returned.
+
+
+

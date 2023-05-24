@@ -1,0 +1,146 @@
+Simple Storage Service:
+
+DOCS: 
+
+Developer guide: http://docs.aws.amazon.com/AmazonS3/latest/dev/Welcome.html
+Permissions:
+http://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html
+
+Hosting a static website: http://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html
+
+
+
+-Used to store any files including static website files to serve.
+
+-Does not work for any server-side code in the files. 
+
+Organized into Buckets. -
+
+-Need to set frequency accessed: 
+  Standard
+  Infrequent
+
+-Need to set Access Type 
+
+  Anonymous for static website files for anyone to access
+  Specific User for personal files or private files
+
+---
+
+PERMISSIONS:
+
+Allowing permissions to download files:
+
+NOTE: S3 is an Object Store not a file system, so you need to ensure that permissions on the objects (the files) stored are set to allow downloading if they are needed to be downloaded. 
+Also, check that your IAM account has a role associated with it that includes "s3:GetObject"
+
+-Object permissions: separate from Bucket permissions.  Allow read or write access to object by user.
+
+-Bucket Permissions: specify which users are allowed access to objects in a bucket and which types of access they have
+
+Bucket and object permissions are independent of each other. An object does not inherit the permissions from its bucket. For example, if you create a bucket and grant write access to a user, you will not be able to access that user’s objects unless the user explicitly grants you access.
+
+----------
+
+SETTING UP S3 Buckets:
+
+-You can set logging to store logs to a separate bucket (in that bucket enable write access to Log Delivery system).
+
+-Go to your name in top right -> Security Credentials -> Access keys
+
+------------
+
+Using SDK to upload files to S3:
+
+-Need npm packages: multer multer-s3 aws sdk for JavaScript
+
+with React-Native (https://ademcan.net/blog/2017/11/24/uploaddownload-images-tofrom-aws-s3-in-react-native-a-step-by-step-guide/)
+
+-Create bucket 
+
+
+******* YOU NEED TO USE THE REGION STRING KEY SET TO REGION IN PARAMS PASSED TO S3 SDK ON BACKEND (i.e. 'us-east-1' and not the url): *****
+
+var s3 = new AWS.S3({
+  accessKeyId: keys.AWS_ACCESS_KEY_ID, 
+  secretAccessKey: keys.AWS_SECRET_ACCESS_KEY, 
+  region:'us-east-1'
+});
+
+
+------------
+
+-Good practice to create a name starting with your domain.  All names must be unique across all buckets anywhere.
+  ** Do not use spaces or whitespace in the name
+
+Example: com.brentmarquez.bucket-name
+
+-You can click next and set up logging or versioning (keep older versions of the bucket when they change)
+
+Permissions:
+-Setting permissions can be done in the next menu.  Object Permissions means that the user can change the selected permissions.
+ You can set public permissions (to expose files publicly) and system permissions to allow logging etc.
+
+Folder Structure: 
+Note: there is only one level in S3 storage.  Folders created are just representational visually and in reality, a prefix is added to the file to group them - they are not in actual separate folders.
+
+------
+
+Storing and Hosting Static Web assets:
+
+-Turn S3 Bucket into a server which serves static web files to clients.
+
+
+1) Make a production build bundle of your app and upload all of the files in the public/ or dist/ folder created by the build tool to the S3 bucket.
+
+2) Set access permissions to make files accessible.  Do not set the permissions to be public, instead set up a Bucket Policy.
+
+  See examples for setting permissions here: https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html
+
+-look at the Granting Read-Only Permission to an Anonymous User example
+  -copy the policy statement block of code shown.
+   (https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html#example-bucket-policies-use-case-2)
+
+  -Under the Permissions Tab in your bucket menu page, select the Bucket Policy option.
+
+  -Paste the example block code from the docs above into the Bucket Policy Editor box.  Change the name of examplebucket to your bucket
+
+Ex: {
+  "Version":"2012-10-17",
+  "Statement":[
+    {
+      "Sid":"AddPerm",
+      "Effect":"Allow",
+      "Principal": "*",
+      "Action":["s3:GetObject"],
+      "Resource":["arn:aws:s3:::com.brentmarquez.bucket-name/*"]
+    }
+  ]
+}
+
+3) Click save and the files will be uploaded to the bucket.
+
+4) Set the bucket to be a server for the static assets.  Go to the Properties tab and select Static Website Hosting.
+
+  -Select "Use this bucket to host a website"
+
+  -Define the main entry point file name (i.e. normally it is    index.html)
+  -Define the file to serve if error (also index.html in SPA)
+
+  -Click save
+
+The URL for your static site will be shown in the Properties->Static website hosting menu page at the top (the same menu page you just used).
+
+---------
+
+Enable Logging:
+
+You can enable logging by creating a new bucket (i.e. com.brentmarquez.bucket-name.logs), and then go to the original S3 Bucket you want to keep logs from and select Properties->Server access logging and select enable logging, then select the target bucket to be the bucket you created ("com.brentmarquez.bucket-name.logs"), and you can also set a prefix to simulate folder placement of the files.  
+
+
+-----------
+
+CREATING CUSTOM DOMAIN NAME FOR S3 BUCKET HOST:
+
+-Use Route53 Service. Check costs.  
+

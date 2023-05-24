@@ -1,0 +1,53 @@
+
+
+FTP - 
+
+
+*** Useful to quickly move files to the server
+
+Can be used as an alternative to get files to your server if you don't use git.
+
+***IMPORTANT: DO NOT USE THIS WITH GIT - IT WILL MESS YOUR REPOSITORY UP.
+
+IF YOU KNOW GIT, THEN JUST USE GIT OVER THIS.
+
+
+Using FTP allows you to move files to your server without having to use the terminal and through a GUI.
+
+
+1) Install FileZilla FTP client (for your OS).
+
+2) Open FileZilla and click on Open Site Manager in the top left or from the dropdown.
+
+3) Click NEW SITE and type a name to label it (i.e. Brents AWS Server, etc.)
+
+4) Copy your IP Address for your EC2 Instance and paste it into the HOST field on the right panel (under the general tab)
+
+5) Change the Protocol from FTP to SFTP for using the SSH port (22).  FTP is not secure and the port for it is not enabled on the firewall.
+
+6) Change logon type to be key file - this is the pem key file (even on windows).  Click browse to find your .pem file on your computer and select to use it.
+
+7) Set the user to be ubuntu (unless you created a different user to use here).
+
+8) Click CONNECT and Ok if you get a SSH warning (the first time only - if this pops up again, you should be concerned).
+
+-You can now navigate through the server in the GUI on the right side under `Remote Site: ` 
+
+You can drag project files over to var/www/html folder - You need to have permissions as the right user:
+
+CHANGING OWNERSHIP OF HTML TO USE FTP:
+
+1) SSH into your EC2 server
+
+2) $ sudo chown -R ubuntu html/
+
+// this sets a ubuntu owner for the html folder
+// type $ ls -l to check new ownership
+
+
+
+
+
+
+
+

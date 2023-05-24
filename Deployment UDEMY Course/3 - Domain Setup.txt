@@ -1,0 +1,68 @@
+DOMAIN SETUP WITH AWS:
+
+-Google and GoDaddy are the most popular.
+
+Typical cost is $12/year
+
+-Any domain site is fine to use to buy a domain.
+
+-Note: You can add any subdomain to your domain purchased.
+i.e. blog.mainsite.com
+     store.mainsite.com
+     www.site.com
+
+
+Setting up a domain with Google:
+
+1) go to their site at https://domains.google/#/
+
+2) Click manage my domains.
+
+3) Click to search for a domain or transfer one.
+
+4) Enter a domain name in the search bar (might have to change settings to show available domains only first).
+
+-Add to cart and checkout to buy it.
+
+5) After purchasing, Go to My domains ---> set the Use the Google Domains name servers option.
+
+6) If you want to set up GSuite for gmail (i.e. your email@yourDomain.com) then you can set up Synthetic records.  
+
+7) Set up CUSTOM RESOURCE RECORD: Allows you to do whatever you want with your domain.  You can add a subdomain here if you want or just put in @ symbol (this will make this custom record handle any requests to any subdomain on your domain.)
+
+8) select the record:
+
+A record option: points the domain at an IP address
+CNAME record option: points domain at another domain
+MX Records: used for email servers
+
+A record is selected by default (you can leave it unless otherwise desired).
+Note: TTL is time to live - how long it takes before the domain is propogated and accessible on the internet.  
+This typically takes around 15 seconds.  You can leave the default setting on TTL.
+
+9) Copy your IPv4 IP address from the EC2 console on AWS dashboard and paste it into the IP address field.
+
+10) Click Add on the right and you are done.
+  You may need to wait some time before the domain progogates on the internet.
+
+==============
+
+SETTING UP A DOMAIN WITH GODADDY:
+
+1) Sign in to GoDaddy and under the domains section click on the DNS button to list a display of records for the domain.
+
+2) Click the pencil to edit the A record (first in the list) and put in your IP address for your EC2 instance.
+This will point the domain to your EC2 server on AWS.
+
+*You can create an A record by clicking ADD at the bottom.
+
+HOST - this is what goes before the domain name (you can put @ or www etc.)
+
+POINTS TO - this is where you put your IP address.
+
+
+
+
+
+
+

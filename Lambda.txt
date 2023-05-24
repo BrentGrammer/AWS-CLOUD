@@ -1,0 +1,256 @@
+
+Lambda Service:
+
+**The beneifit of Lambda functions is that they are like the handler functions in your route handlers (like in an Express app), but you never have to worry about them being overloaded because they scale automatically.
+
+-Back end functions can be stored and run as needed.  They can also scale automatically as needed.  (i.e. an insert image photo when a user uploads a pic for example).
+
+-Client makes a fetch call to an endpoint provided by AWS Lambda.
+-A function runs when that endpoint is requested by the client.
+
+-The function will only be run and used on the server when called and server time or resources will not be charged otherwise.
+-Very useful for something that needs to be done ocassionally on the server.
+
+
+THE ONE CON TO LAMBDA:
+
+-The Cold-Start problem: The function is stored in a database and when the endpoint is hit for the first time, Lambda must get it from the db, put it in a container, and then run it, which takes time.
+Succeeding calls to the same function will be much faster after it is already stored in a container.
+
+--
+
+CREATING A LAMBDA IN AWS DASHBOARD: 
+
+1) In AWS Dashboard, search for lambda in the search bar.
+2) Name your function (whatever you want)
+3) Choose the programming language to use (select the latest version they have) i.e. Node/Python/C# .NET etc.
+4) Choose a role associated with the Lambda function.
+5) Click Create Function
+
+** Use Serverless npm tool to deploy Lambda functions through the command line without having to use the dashboard to configure them (since the dashboard can change).
+
+
+--
+
+USING THE SERVERLESS CLI NPM TOOL:
+
+-Serverless is a tool that will take care of configuration on AWS for you and allow you to set Lambdas up and deploy them in the CLI terminal instead of the dashboard.  You can create, config, deploy etc. Lambda Functions from the CLI.
+
+$ npm install -g serverless
+
+// test by typing serverless in the command line for a list of commands.
+
+------------
+
+USING SERVERLESS TOOL:
+
+***Note: The npm serverless tool works with any service provider including AWS, Azure, Openwhisk, etc.
+
+* Shortcut for `serverless` command in terminal is `sls`.
+
+--
+
+CREATING A LAMBDA WITH SERVERLESS:
+
+-The Create Command:
+
+$ sls create --help
+
+// this lists the args of the create command with a list of templates you can provide it.
+
+-run the command and give it a template (-t flag) followed by the name of the template from the list given by the --help command above.
+
+$ sls create -t aws-nodejs
+
+// This will create serverless.yml, handler.js, and .gitignore files
+
+
+Files created:
+
+-HANDLER.JS - this is the file you write the lambda function in.
+
+  -The lambda function will have as a starting point a message and an    input property in the response body.  The input field typically    holds any data that you want to return to the client.
+
+Ex of basic lambda in handler.js:
+
+module.exports.rankly = async (event, context) => {
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: 'Success',
+      input: event, // response data object you want to send
+    }),
+  };
+};
+
+-SERVERLESS.YML - defines the setup and config of the function. 
+
+  You can set: 
+   -the provider, 
+   -the region the server should be to serve it, 
+   -names to reference the functions being used, 
+   -environmental variables (to keep secrets separate from the     functions),  
+   -the trigger/event to start the function
+   -set a schedule to run the function every interval (hour/min etc.)
+   -set stage to dev or prod (change to prod when in production)
+   ...more - read the inline docs
+
+---
+
+CONNECTING SERVERLESS TOOL TO AWS:
+
+1) Go the IAM service in the AWS dashboard.
+
+2) Click on users in the side nav and then add a user
+
+3) Name the user <the function name>-lambda to make it clear it is a lambda function.
+
+4) Set the Access Type to Programmatic Access (but not AWS Management Console Access)
+
+5) Click next for Permissions: You can select Attach Existing Policies to choose ones that AWS has builtin.  type 'func' or 'lambda' in the filter policies bar to show associated policies.  (For testing purposes, administrator access may be fine).
+
+6) Click Next and then Create User
+
+7) Go to the terminal CLI and configure serverless to communicate with AWS:
+
+-use the config credentials command with a --provider flag set to aws
+-set a --key flag to the Access Key ID value from the create user page in the AWS dashboard. 
+
+$ sls config credentials --provider aws --key AKIAI26MQOWK6XCVW4KA --secret /dfdsdfjshdfkjh378972342hkjshdfkj
+
+//This attaches and connects the user profile created to serverless so you can use commands in the terminal related to it (i.e. a lambda function etc.)
+
+- a hidden .aws folder with a credentials file containing the access id and key will be created in the root folder (~/.aws/credentials)
+
+----
+
+UPDATE THE SERVERLESS.YML FILE:
+
+1) Change the name of the function to what you want in both the serverless.yml config file and the handler.js file to match
+
+2) Change the service value to your user created (instead of the default aws-nodejs etc. change it to rankly-lambda or whatever you named the user profile you created to be associated with the service)
+
+ 
+----
+
+DEPLOYING THE FUNCTION:
+
+-Remeber to do this in the folder where serverless.yml and handler.js are located.
+
+$ sls deploy
+
+// This sends the function to AWS and stores it for future use. 
+
+
+RUN THE FUNCTION:
+
+$ sls invoke --function <fnName>
+
+// the name should match what is in the serverless.yml file under:
+functions:
+  name:
+    handler: handler.<fnName>
+
+Ex: $ sls invoke --function rankly
+
+**NOTE: For testing use a local flag so that you will not be charged
+for running the lambda online over and over.  This simulates a lambda call and invocation.
+
+$ sls invoke local --function <fnName>
+
+// Note: this will only work if the function is not dependent on external resources like S3 storage, etc.
+
+-----------
+
+SETUP AN ENDPOINT THAT TRIGGERS THE LAMBDA FUNCTION:
+
+-To make the lambda fn fire based on an endpoint reached in the web app, set up an endpoint trigger in the serverless.yml file under the events: http: section.
+
+1) Copy and paste the commented out events: http: section with path and method fields under your functions: <fnName>: section in the serverless.yml file.
+
+Ex:
+
+functions:
+  rankly:
+    handler: handler.rankly
+    events:
+      - http:
+          path: users/create //<-- whatever relative path you want
+          method: get
+
+// Behind the scenes another AWS service, API Gateway, will be used to create an endpoint to trigger this function
+
+2) Deploy the lambda function again with serverless:
+
+-inside the folder with the servless.yml/handler.js files:
+  $ sls deploy
+
+**You will see an endpoint generated by AWS API Gateway that needs to be used to trigger the lambda (it will be a modified version of the one you defined in the serverless.yml file under the path field).
+
+
+------------------------
+
+
+SENDING QUERY STRING PARAMETERS TO LAMBDA ENDPOINT:
+
+
+-Query strings sent from the front end can be extracted from the endpoint
+ under the event.queryStringParameters.<param> value.
+
+
+In the handler.js file:
+
+module.exports.rankly = async (event, context) => {
+
+  const rank = event.queryStringParameters.rank;
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: 'Go Serverless v1.0! Your function executed successfully!',
+      input: event, // this is the response object that gets sent in response
+    }),
+  };
+};
+
+// This grabs the value in the url in the rank query param.
+Ex: http://path/rank?rank=4
+
+
+TRIGGERING THE ENDPOINT FROM THE FRONT END:
+
+On the front end, make a fetch call to the modified url created by API Gateway when you deployed the lambda function after defining the path trigger in the serverless.yml file. 
+(You get this by taking note of it after the sls deploy command in the terminal when deploying the function.).
+
+-You can chain .then blocks to the fetch call to get the input field from the response returned from hitting the lambda input, which typically has the data assoc. with the request in it.
+
+Ex:
+
+fetch('<apigateway/path/endpoint')
+  .then(res => res.json())
+  .then(data => { return data.input; });
+
+// Note: for CORS errors, you can add the Access-Control-Allow-Origin header to the lambda function in handler.js above the body field.  Then redeploy the function with sls deploy
+
+Ex in handler.js:
+
+  return {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*'
+    },
+    body: JSON.stringify({
+      message: 'success',
+      input: data, 
+    }),
+  };
+
+// in production, you would want to set the value to your domain
+
+
+
+
+
+
+
+

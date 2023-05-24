@@ -1,0 +1,59 @@
+Section 3, Lecture 27
+
+*You don't run the build process on the server - this takes up a lot of space.
+
+-Clone the front end code if you don't already have it locally
+-Install all npm dependencies locally in the project if necessary
+
+Change any localhost:xxx/ urls and paths in the front end code to the domain name etc. since the code will run in the browser on the user's computer and localhost will be their computer.
+
+This may not be necessary in the Express server since localhost will be the server computer.
+
+-Run the build command locally - npm run build for CRA for example.
+
+*Change the homepage you are serving the app on in package.json if you are not serving it from the root domain you are using (i.e. http:mysite.com/appurl instead of http://mysite.com/)
+
+in package.json:
+
+add a homepage entry in the top level of the object:
+
+"homepage": "https://homesite.com/appUrl",
+
+
+-Copy the build folder to the project folder on the apache server on the EC2 instance using FTP with FileZilla
+
+-make a new conf file for the app in etc/apache2/sites-available/
+
+(i.e. appname.domain.com.conf)
+
+-sudo vi <conf filename>
+-press I to go into insert mode.
+
+Tell apache where to look when the ServerName domain is reached. It needs to look in the build folder of the project folder for the app.
+-change the DocumentRoot line to /var/www/<appFolder>/build
+-change the Directory tag to be the same folder as DocumentRoot in quotes.
+-The ServerName needs to be the domain (with subdomain if applicable) that the A record is for and the app will be served on.
+Ex ServerName app.domain.com
+
+-Enable the site with apache in etc/apache2/sites-available: $ sudo a2ensite <appfilename>.conf
+
+$ sudo service apache2 restart
+
+-Run the certbot commands to enable https
+
+$ sudo apt-get update
+$ sudo apt-get install software-properties-common
+$ sudo add-apt-repository ppa:certbot/certbot
+$ sudo apt-get update
+$ sudo apt-get install python-certbot-apache 
+$ sudo certbot --apache
+
+**You want to point to your domain serving the frontend.
+
+The backend will be hosted on a different subdomain (i.e. appApi.domain.com)  and any calls to your server should be directed to that domain in your frontend code.
+
+
+
+
+
+

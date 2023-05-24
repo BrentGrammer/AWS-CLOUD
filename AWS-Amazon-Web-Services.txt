@@ -1,0 +1,223 @@
+
+Can use aws free for 12 months(setup billing reporting to see how much you would be charged)
+
+Instead of servers:
+AMI is like a virtual server, then an EC2 instance is created which is your specific virtual server (VPC-Virtual private server)
+
+Aws had Regions around the world.  You select a region- aws does not move data out of that region.  You can do that if you want manually with told provided.
+
+Region had at least two availability zones which act as backup in case of outages.
+
+Edge locations can be used to get data center closer to customer to reduce latency.
+
+----------
+
+Console Manager:
+
+Support tab has training you can go through and docs.
+
+Learn to Build and build a solution sections walk through how to set up various services.
+
+_-----------------
+Main services:
+
+Ec2- elastic compute cloud
+-computing environment
+-Resizable depending on needs
+
+Setup:
+Determine region
+-Launch ec2 instance from AMI Amazon Machine Image
+-Choose cpu capacity and storage needs
+
+AMI:
+Select based on region, OS, 64 bit, Launch permission, and storage.
+-Can create custom AMI with added selected features.
+
+Instances
+
+Category-Generation
+
+Later generations are cheaper and better.
+
+Ex
+M5 is the latest general purpose ec2 instance.
+
+--------
+
+Meta-data:
+
+169.254.169.254/latest/meta-data in header to access
+-Info about current ec2 instance logged into.
+
+Get user data:
+
+169.254.169.254/latest/user-data
+
+--+-----------
+Billing for Ec2 instances:
+
+On demand-by the hour
+
+Reserved- pay by year
+
+-------------
+
+S3 storage
+
+-unlimited storage of objects
+-Objects must be less Stan 5 TB in size
+
+Uses:
+
+File application hosting (users can dl)
+Media hosting
+Storage dbs etc.
+
+Objects are stored in Buckets. Can have 100 buckets (default)
+
+Can access objects with object key in header by region or through global header link.
+
+Security:
+Use ssl encrypted endpoints when storing n returning data.
+
+---------
+
+Can host static website on S3 storage.  Need index n error.html
+
+Amazon Glacier storage:
+
+-good for storing infrequently accessed data.
+-stores archives in a vault.
+Very cheap to store data not needing to be accessed regularly. 
+
+***Takes 3-5 hrs to access data.
+
+Alternative is ebs cold hdd option which allows quicker access for infrequently accessed data.
+
+-----------
+EBS is block storage option:
+
+Block vs. Object Storage:
+
+You can update a block(piece or part) of a file in block storage.
+
+Object storage: you replace the whole file to update.
+
+EBS (Block Storage service): used when data needs to be quickly accessed and for long term persistence.
+
+Function s like a disc drive(format it, etc.) Vs. S3 which is online storage.
+
+--------
+
+EC2 Instance storage:
+
+Extremely fast, but data is ephemeral (data disappears when instance is stopped.)
+
+------------
+
+VPC
+Virtual private cloud:
+
+VPCs are logically separated unless you manually set up a relationship.
+
+Subnet: defines range of ip addresses in your vpc.
+
+Can be public, private(can access internet through rad, but does not go thru gatewayrouter and is nott accessible publically), or VPN only.
+
+--------------
+
+Patching, maintenance, and security must be set up for EC2 instances.  Tools provided by aws.
+
+---------------
+
+Everything in aws is an API call
+
+Use ssl endpoints for security.
+
+----
+
+IAM:
+
+Identity Access Management:
+-manage access/permissions users have to your AWS resources.
+
+Make sure users do not have root account permissions.
+
+Settings for IAM policy(permissions) are in JSON format.
+
+Roles:
+
+-Ways to change access for a specified period of time.
+
+Or way to change permissions on a aws srrvice
+
+Users can be assigned roles that only have access to specified permissions that override any other permissions
+
+------------------
+
+Best iam practices:
+
+Delete AWS account (root) access keys(2 including secret key) to artificially limit what root act can do (because it can do anything).
+
+Enable MFA on root account
+
+Monitor logs:
+Use Macy with cloud trail to establish a baseline, and if something happens out of the ordinary, macy will let you know.
+
+Create users/roles/policies/permissions in IAM tab under services in top menu
+
+---------------
+
+Databases in AWS:
+
+Sql(RDS) and NoSql(DynamoDB)
+
+Sql has fixed schema, where nosql is dynamic and fields are not fixed.
+
+Recommended to deploy db with Multi-AZ operation (Multiple Availibility zone deployment)
+This enables aws to write data to both dbs synchronously as a failsafe if one fails.
+
+DynamoDB
+Primary key is either the partition key or a combination of the partition key and sorting key (these are fields that are required in every entry)
+
+Rds relational dbs good for transactions (better than nosql) - ACID requirements
+
+For massive amount of reads and woes then nosql is better, particularly if the requests are simple GET and PUTs
+
+-----------------
+
+Cloudwatch-metrics monitor, collects metrics on latency, etc for determining whether to take action to scale. 
+
+Can set alarms and events when alarms go off
+
+For new acct:
+****Enable Cloudtrail
+Logs
+
+-----------------------
+
+Lambda:
+
+-FaaS (Functions as a Service)
+
+-uses Serverless architecture  
+
+-It definitely isn't THE solution for all use cases, but good for replacing cron jobs, doing restful apis, image services, things like that
+
+-No managing of servers or scaling of servers.  
+
+-You provide functions that are run and scaled as necessary on services by AWS.
+
+-biggest difference is that it's not a continually-running-server.  Each function fires when it's called and then exits.
+
+-If you're wanting to go more of a microservices route with Node, Lambda + Serverless is a pretty cool solution.
+You would create a function for each event - whether that's a "route" or another type of job.?  
+
+-You are charged for the time the functions run and volume, etc.
+ 
+-install with npm:
+
+npm install -g serverless
+
+

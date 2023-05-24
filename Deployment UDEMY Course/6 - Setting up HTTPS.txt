@@ -1,0 +1,138 @@
+-HTTPS is required and sends traffic to port 443 instead of 80.
+
+
+-Use Certbbot to setup lets encrypt with your server:
+
+1) Go to https://certbot.eff.org/lets-encrypt and select the server software (i.e. Apache etc.) and the server os (i.e. Ubuntu - check the version for your EC2 instance)
+
+2) In the var/www/html/ directory in the terminal, run the commands in order that are in the instructions on the certbot website.
+
+Ex:
+$ sudo apt-get update
+$ sudo apt-get install software-properties-common
+$ sudo add-apt-repository ppa:certbot/certbot
+$ sudo apt-get update
+$ sudo apt-get install python-certbot-apache 
+
+3) Set up a Virtual Host in the apache config to instruct apache to use HTTPS on any request from/to the specified domain.  
+
+-Create a config conf file for your site in etc/apache2/sites-available:
+   $ sudo vi my-site.com.conf
+
+  -press `i` key to go into insert mode
+
+copy and paste VirtualHost code into the file:
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/ridic   <---name the folder for your project
+    ServerName ridiculous-inc.com <---url in the get request
+    <Directory "/var/www/ridic">  <---serve this: needs to match
+        allow from all                DocumentRoot
+        AllowOverride All
+        Order allow,deny
+        Options +Indexes
+    </Directory>
+</VirtualHost>
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/decisioncalc
+    ServerAlias 52.90.76.230             <---use ip if no domain
+    <Directory "/var/www/decisioncalc">
+        allow from all
+        AllowOverride All
+        Order allow,deny
+        Options +Indexes
+    </Directory>
+</VirtualHost>
+
+
+  -press ESC to get out of insert mode, and save the file with Shift-Z    Shift-Z
+
+4) In terminal go into var/www/ folder and move the html folder into the folder you specified in Directory above:
+
+$ sudo mv <folder with proj files> <DirectoryPath>
+
+5) Enable the site with the a2ensite command:
+
+navigate to $ cd /etc/apache2/sites-available/
+
+$ sudo a2ensite decision-maker.com.conf
+
+// use the command to enable the sit config file you created for the project. 
+
+6) Re-load apache
+
+$ sudo systemctl reload apache2
+// link should now work with new domain name
+
+7) Run certbot command:
+
+$ sudo certbot --authenticator standalone --installer apache -d <domain> --pre-hook "systemctl stop apache2" --post-hook "systemctl start apache2"
+
+Ex:
+$ sudo certbot --authenticator standalone --installer apache -d decision-calculator.live --pre-hook "systemctl stop apache2" --post-hook "systemctl start apache2"
+
+-Say Yes to redirect all traffic to https
+
+8) Enable Port 443 in the firewall:
+
+-go to the AWS EC2 console and open the launch-wizard (scroll all the way to the right in the menu). 
+
+Add a New Rule,
+Select HTTPS from the dropdown
+leave defaults for 0.0.0.0. :0
+Add a note "HTTPS for browser" optional.
+
+Click Save.
+
+// A new conf file is created with le-ssl added to the name.
+Ex:
+decision-calculator.live-le-ssl.conf
+
+
+
+
+
+
+
+
+
+
+================
+
+TROUBLESHOOTING:
+
+see https://www.udemy.com/deploying-web-apps-simplified-quick-or-in-depth-on-aws/learn/v4/t/lecture/8689408?start=0
+
+HTTPS/Cerbot Commands, VirtualHost tags
+Section 2, Lecture 17
+Lets Encrypt Site: https://letsencrypt.org/getting-started/
+CertBot Site: https://certbot.eff.org/#ubuntuxenial-apache
+
+CertBot Commands*
+
+$ sudo apt-get update
+$ sudo apt-get install software-properties-common
+$ sudo add-apt-repository ppa:certbot/certbot
+$ sudo apt-get update
+$ sudo apt-get install python-certbot-apache 
+$ sudo certbot --apache
+
+*IMPORTANT - Certbot is going through a major update right now, so the short hand command that I use in the first 3 sections (Front-end, React/Express, & Rails), is going to fail. You can use a much longer command (I mention it in the Flask section) for now to get it to work. Once Certbot stabilizes, I will update the video, if the old command doesn't work.
+
+$ sudo certbot --authenticator standalone --installer apache -d cm.ridiculous-inc.com --pre-hook "systemctl stop apache2" --post-hook "systemctl start apache2"
+
+Optional short explanation: You don't actually need the --pre-hook, or --post-hook commands, those will simply run immediately before and after certbot validates the domain. In this case, stop apache before, start apache after. The command also specifies the domain you want the cert for, as opposed to everything in your /etc/apache2/sites-available folder. For NGINX, just change the --installer to "nginx"
+
+VirtualHost
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/ridic
+    ServerName ridiculous-inc.com
+    <Directory "/var/www/ridic">
+        allow from all
+        AllowOverride All
+        Order allow,deny
+        Options +Indexes
+    </Directory>
+</VirtualHost>

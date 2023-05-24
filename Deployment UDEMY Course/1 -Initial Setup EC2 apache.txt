@@ -1,0 +1,116 @@
+AWS Udemy Course - deployment for beginners:
+
+The Cloud: Simply a real computer that is somebody else's that you rent to use as a server.
+
+EC2 Setup:
+
+1) Go to the EC2 page from services
+
+2) Click on `0 running instances`
+
+3) Select region in the top right dropdown
+
+4) Select an image: (use `Ubuntu Server xx.xx LTS (HVM), SSD Volume Type `
+
+5) Select a server instance (T2 micro is currently free tier available - it is $10-12/month after 12 months.) and select it and click launch.
+
+6) Create a new key pair from the dropdown prompt.  Name it something like BrentsAWSkeys, and click `Download Key Pair`.
+
+**This downloads a .pem (i.e. BrentsAWSkeys.pem) file DO NOT LOST THIS - this is how you get into your server.
+
+7) Click Launch instance after downloading the keys .pem file and then click View Instances button at the bottom.
+
+---------
+
+CONNECTING TO THE SERVER WITH PuTTY FOR WINDOWS:
+
+
+DOCS: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/putty.html?icmpid=docs_ec2_console
+
+PuTTY:  Allows you to connect to a Linux computer from a windows machine. 
+(This is not necessary on Mac since it runs on Linux Kernel, windows does not). 
+
+Note: .pem key files do not work with PuTTY, so you need to use PuTTY gen key generator (comes installed with PuTTY) to convert the keys for use with PuTTY.
+
+1) Go to your EC2 instance info page (lookup EC2 in the main dashboard page in services and click on Running instances link).
+
+2) Click connect in the top nav.  Then click on the link to `connect using PuTTY` which gives you instructions and a link to the download page.
+
+3) Download and install PuTTY: https://www.chiark.greenend.org.uk/~sgtatham/putty/
+
+-Click on the download it here link and download the msi for windows 64, etc. and install it. (Installs both PuTTY and a key generator).
+
+4) Open up port 22 so that the firewall will allow you to connect to the linux server on AWS.
+
+-Go to the far right of the EC2 instance info (after clicking on services->EC2->running instances link), and click launch-wizard-x under the Security Groups column.
+
+-If it's not set, Go to the Inbound tab on the bottom pullup menu and make sure that port 22 is open so the firewall will let you through.
+(If it's not open, click on Edit->Add Rule->Choose SSH and set port 22 for the port range and TCP for the protocol.
+
+5) Convert .pem keys for use with PuTTY.
+
+-open PuTTY Gen (comes installed with PuTTY) to convert keys.
+-Select RSA for type of key to generate (for older versions you can use SSH-1 RSA).  
+-Click on Load to find your .pem file - in the file window change the search filter to all files *.* in the dropdown.
+-Select your .pem keys file
+-Click on `Save private key` - don't worry about a passphrase (click Yes to save without a passphrase), the key is safe.
+-Save the file with the same name and the extension of .ppk instead of .pem
+
+6) Open PuTTY and set config options:
+
+-In the category pane on the left, choose the session collapse menu.
+
+-Enter your ip address in the Host Name(or IP address) field.  Go to your EC2 instance info page in the AWS console dashboard and get the IPv4 Public IP number from the description tab in the bottom window pane. *prepend the ip address with ubuntu@ -- example: ubuntu@34.205.140.42
+(leave the port to be set to 22.)
+
+-Go to the Connection option in the left window pane in PuTTY and   collapse it --> SSH --> Auth.  
+  Click Browse.... and select your AWS keys .ppk file. 
+
+  Only make sure only Display pre-authentication banner, Attempt authentication using Pageant and Attempt "keyboard-interactive" auth (SSH-2) are selected in the checkboxes, uncheck anything else.
+
+-Under Session in left window pane, define the Saved Sessions name as `AWS`, then click Save. This will allow you to select that and click load on future setups and select AWS which will select all the saved config options.
+
+-Click Open, you will get a popup displaying a key fingerprint - this is normal when you first load PuTTY with the key - click Yes.
+
+SECURITY NOTE: If you ever get this warning again, you need to be suspicious and check the fingerprint to be sure it matches the one in your fingerprint on your rsa key in PuTTY to make sure they match.
+(possible logging into different server?  something is up.)
+
+*From now on you can go to PuTTY and load the saved AWS session to ssh into the server.
+
+====================
+
+COMMANDS TO RUN IN THE SSH SHELL TO YOUR EC2 SERVER TO SETUP:
+
+$ sudo apt update
+
+// This should be the first command run when logging into your server and setting up a new machine for first time.  (apt is the ubuntu app store - alias is apt-get)
+
+$ sudo apt upgrade 
+
+// upgrdes pathes with new features etc.- run this as well as the above.
+
+$ sudo apt install apache2
+
+// install an apache server - respond Y to install the extra dependencies.
+Check apache install with $ sudo service apache2 status (press CTRL-C to exit the status view)
+
+
+==================
+
+
+
+===================
+
+TROUBLESHOOTING:
+
+-If you get a message about Grub and local modifications to the file when running sudo apt upgrade/update:
+
+Use the show the differences between the versions to check what the differences are.
+
+From the diff view, you can recognize the changes you have made to the file (if any), and the differences between current file and the maintainer file.
+
+Now you need to merge the maintainer file with the local changes: either install the package maintainer's version and then edit to introduce your changes to the settings, or keep the local version currently installed and then edit to introduce the changes made by the package maintainer.
+
+In your case you have no changes made to the file, and the differences are minor and irrelevant to your setup, so you can ignore and proceed with install the package maintainer's version without the need to edit the file any further.
+
+

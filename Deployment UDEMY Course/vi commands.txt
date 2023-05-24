@@ -1,0 +1,45 @@
+LINUX COMMANDS:
+
+$ which <command>
+
+// shows you where the bonary file for that command is located - can be used to check if you have program installed, i.e. $ which git.
+
+$ sudo !! 
+// this reruns the last command
+
+---------------------
+
+VI COMMANDS:
+
+Quit:
+
+$ :q!
+
+
+Edit a readonly file:
+
+$ sudo vi <filename> 
+
+-allows for editing as root user.
+
+Delete lines in a editable file while open:
+
+$ d<number>d
+
+-deletes the number of lines: ex: d100d (deletes 100 lines)
+
+------
+
+Edit file with insert mode:
+
+$ i
+
+// gets you into insert mode to edit a file.
+
+press esc to get out of it and shift-z twice to save and exit.
+
+-----
+
+Save and Exit:
+
+SHIFT-Z twice to save and exit.

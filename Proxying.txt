@@ -1,0 +1,52 @@
+(Lecture 25 or 26)
+
+-Rememember in the firewall on the EC2 instance to open up SSH on port 22 and HTTPS on port 443.
+
+
+Proxy forwarding for Express server on AWS using apache:
+
+Reverse proxy will take what is coming in on a different port than the one that is open (80) and forward it to it.  Whereas a proxy will take what is coming in on the open port (port 80) and forward it to another port.
+
+-Create an A record for a subdomain on godaddy or whatever domain host you're using and point it to the ip address of the EC2 instance.
+
+-create a .conf file in sites-available folder on the apache server on EC2 instance to tell apache to listen to the domain set and you can use a reverse proxy (need to enable proxy_html with a2enmod command) and then in the conf file, tell apache to forward all traffic coming in (on port 80 by default) to the port that your Express server is listening on.
+
+-No need to open up the express port on the EC2 instance (better for security) and no need for https setup
+
+Apache can take care of https
+
+--------
+
+
+install pm2 to substitue for nodemon
+
+$ sudo npm install pm2 -g
+
+$ sudo pm2 start bin/www --name "Appname Api"
+
+$ sudo pm2 list 
+// shows what processes are being managed by pm2 and their status
+
+-----
+
+Add Certbot commands to enable https if not done:
+
+$ sudo apt-get update
+$ sudo apt-get install software-properties-common
+$ sudo add-apt-repository ppa:certbot/certbot
+$ sudo apt-get update
+$ sudo apt-get install python-certbot-apache 
+$ sudo certbot --apache
+
+
+============
+
+TROUBLESHOOTING:
+
+-Internal server errors:
+
+look at logs: 
+
+$ tail -f /var/log/apache2/error.log
+
+-tail prints 10 lines at a time and you can refresh to get more errors on the fly.
