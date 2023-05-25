@@ -5,9 +5,11 @@ SQS Queue service
 Overall process:
 - Publish message to Queue
 - Consumer continuously polls for new messages at the desired rate.
+  - Lambda instantiates pollers that can scale up and down depending on how many messages are in the source queue. So yes, it is a pull model
 - message is claimed by the consumer (message removed from queue and in ephemeral state)
-  - no longer visible to others, only the consumer that claimed it.
-  - a visibility timeout starts - if consumer does not acknowledge success then the message is put back into the queue and lock is released on it
+  - visibility timeout starts: no longer visible to other threads processors or consumers, only the consumer that claimed it.
+  - a visibility timeout - if consumer does not acknowledge success then the message is put back into the queue and lock is released on it
+    - **default is 30 seconds, should increase this if the processing takes longer
 - Consume and dequeue message (deleting it from the queue)
 
 NOTE: ANTI PATTERN:
@@ -54,3 +56,70 @@ Servlerless Processing Backpressure Control
 Job Buffering
 - Cloudwatch Event connects to SQS
 - SQS connects to EC2 (long running jobs) or AWS Lammbda (shorter running jobs)
+
+SETUP:
+https://www.youtube.com/watch?v=PXX8_3ENc2o
+
+- !! You cannot change type of queue (standard vs FIFO) after it is created
+
+Configuration Options:
+
+- Message Retention Period: how long a message will stay in the queue after it is published.
+  - Generally should be low, i.e. 1 day or less
+  - higher limits are better if using a DLQ
+
+- Delivery Delay: don't make message visible in the queue when it is published until after x period.
+  - useful for race condition maybe, let something else finish before message is picked up.
+  - if using this a lot then there is probably a problem with your architecture.
+
+- Recieve Message Wait Time
+  - How long to hold on to the request when polling for messages before it returns a response
+  - reduces cycles server uses to long poll the queue 
+  - Probably set it to maximum (20 seconds) and use long polling on your consumer
+
+  Define who can send messages to the queue
+  - You would need to enter the arn and details of the resources that can publish to the queue
+
+  Dead Letter Queue
+  - After a number of retries of consumers to get a message from the queue, the message will be moved to a secondary queue, the DLQ
+  - You can set an alarm on the size of the DLQ, and if the size is ever >= 1, send an alert email etc.
+  - After there is resolution on why the processing failed x times, you can move the message from DLQ back to the primary queue
+  - Convention is to name the dlq the name of the queue appended with `dlq`
+  - Maximum Receives option - how many retries before message goes to DLQ. should be 3 to 5 generally
+    - you can use Redrive or manually pull the messages from DLQ and put them back in your primary queue
+
+    Optional Encrytion - will need a KMS key
+
+Maximum Message Count - in the AWS console details for the queue after it is created
+  - How many messages to look at at once. i.e. if more than 1 than it is a batch
+
+
+SETTING UP A LAMBDA WITH SQS:
+https://www.youtube.com/watch?v=xyHLX1dUwuA
+
+- permissions that lambda needs (these need to be attached to the role used by the lambda):
+  - sqs:ReceiveMessage
+  - sqs:DeleteMessage
+  - sqs:GetQueueAttributes
+  - Note: there is a builtin Amazon SQS poller permissions policy you can attach instead.
+
+Processing Messages in Lambda:
+- You want the body property:
+```python
+records = event['Records']
+for record in records:
+    body = record['body']
+```
+
+Note: batching is enabled by default to 10 messages in the Lambda Trigger configuration (go to lambda in AWS console and click add Trigger for SQS connection)
+
+Report Batch Item Failure option:
+  - will report the ids of the messages that failed in a batch and process the rest of the messages.
+   (otherwise, the entire batch will fail if one or more messages fail)
+  The reason why you fired one lambda for each of them is because your trigger window is set to 0. it needs to be at least the smallest allowable number presumably for it to wait enough to scan beyond the first element in the queue.
+Since we have kept the Batch window as 0s, wouldn't it nullify batching? (We will wait 0s for a batch size of 10 messages and invoke the lambda). Is my understanding correct?
+Exactly...I tried to make the window > 0 and the batching works fine ! so yeah putting batching Window as  0 means we are nullifying the batching...elbowcough
+
+
+
+** Make sure to enable the Trigger to get the lambda to start pulling messages.
